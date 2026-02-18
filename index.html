@@ -5,7 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WingsVPN - Безопасный и быстрый VPN сервис</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase SDK (Compat version for easier integration) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <style>
+        /* Все стили остаются без изменений (как в предыдущей версии) */
         * {
             margin: 0;
             padding: 0;
@@ -118,6 +123,7 @@
             padding: 5px 0;
             position: relative;
             opacity: 0.9;
+            cursor: pointer;
         }
 
         nav a:hover {
@@ -218,6 +224,21 @@
             transform: translateY(-3px);
         }
 
+        .btn-google {
+            background: white;
+            color: #333;
+            border: 2px solid #ddd;
+        }
+        
+        .btn-google:hover {
+            background: #f5f5f5;
+            transform: translateY(-3px);
+        }
+        
+        .btn-google i {
+            color: #4285F4;
+        }
+
         .btn-sm {
             padding: 8px 16px;
             font-size: 0.9rem;
@@ -226,6 +247,11 @@
         .btn-lg {
             padding: 16px 40px;
             font-size: 1.1rem;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         /* Hero Section */
@@ -503,7 +529,7 @@
             text-align: center;
         }
 
-        /* Custom Days - Улучшенный дизайн */
+        /* Custom Days */
         .custom-days {
             background: var(--card-bg);
             border-radius: var(--border-radius);
@@ -636,7 +662,7 @@
         .modal-content {
             background: var(--dark);
             width: 90%;
-            max-width: 500px;
+            max-width: 450px;
             border-radius: var(--border-radius);
             padding: 40px;
             position: relative;
@@ -688,6 +714,29 @@
             box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
         }
 
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0;
+            color: var(--gray);
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .divider::before {
+            margin-right: 10px;
+        }
+        
+        .divider::after {
+            margin-left: 10px;
+        }
+
         .form-switch {
             text-align: center;
             margin-top: 25px;
@@ -699,10 +748,25 @@
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s ease;
+            cursor: pointer;
         }
 
         .form-switch a:hover {
             color: var(--success);
+        }
+
+        .error-message {
+            color: var(--danger);
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .success-message {
+            color: var(--success);
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: none;
         }
 
         /* Profile Section */
@@ -716,14 +780,14 @@
 
         .dashboard {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 30px;
             margin-bottom: 50px;
         }
 
         .dashboard-card {
             background: var(--card-bg);
-            padding: 30px;
+            padding: 40px;
             border-radius: var(--border-radius);
             text-align: center;
             transition: var(--transition);
@@ -737,7 +801,7 @@
         }
 
         .dashboard-card i {
-            font-size: 2.5rem;
+            font-size: 3rem;
             margin-bottom: 20px;
             color: var(--accent);
             transition: transform 0.5s ease;
@@ -747,11 +811,18 @@
             transform: rotate(15deg);
         }
 
-        .balance {
-            font-size: 2.5rem;
-            font-weight: 800;
+        .user-email {
+            font-size: 1.2rem;
             color: var(--success);
-            margin: 10px 0;
+            margin-bottom: 10px;
+            word-break: break-all;
+        }
+
+        .subscription-status {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--warning);
+            margin: 15px 0;
         }
 
         /* Referral & Promo */
@@ -877,59 +948,37 @@
             width: 100%;
         }
 
-        /* Payment Modal */
-        .payment-methods {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin: 30px 0;
-        }
-
-        .payment-method {
-            background: rgba(0, 0, 0, 0.2);
-            border: 2px solid transparent;
+        /* Payment Banner */
+        .payment-banner {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             border-radius: var(--border-radius);
-            padding: 20px;
+            padding: 40px;
             text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin: 40px 0;
         }
-
-        .payment-method:hover, .payment-method.active {
-            border-color: var(--primary);
-            background: rgba(67, 97, 238, 0.1);
-            transform: translateY(-5px);
+        
+        .payment-banner i {
+            font-size: 4rem;
+            color: white;
+            margin-bottom: 20px;
         }
-
-        .payment-method i {
+        
+        .payment-banner h3 {
             font-size: 2rem;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
         }
-
-        .amounts {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin: 20px 0;
+        
+        .payment-banner .btn {
+            background: white;
+            color: var(--dark);
         }
-
-        .amount {
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: var(--border-radius);
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .amount:hover, .amount.active {
-            background: var(--primary);
+        
+        .payment-banner .btn:hover {
+            background: var(--light);
             transform: scale(1.05);
         }
 
-        /* Support Section - Исправленные кнопки */
+        /* Support Section */
         .support-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -1056,6 +1105,7 @@
             transition: var(--transition);
             display: inline-block;
             padding: 5px 0;
+            cursor: pointer;
         }
 
         .footer-links a:hover {
@@ -1068,6 +1118,23 @@
             padding-top: 30px;
             border-top: 1px solid rgba(255, 255, 255, 0.05);
             color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Loader */
+        .loader {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top: 3px solid var(--success);
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         /* Responsive */
@@ -1131,14 +1198,6 @@
                 width: 100%;
             }
             
-            .payment-methods {
-                grid-template-columns: 1fr;
-            }
-            
-            .amounts {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
             .profile-nav {
                 flex-direction: column;
                 align-items: center;
@@ -1156,6 +1215,10 @@
             .custom-days {
                 padding: 30px;
             }
+            
+            .referral-link {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -1170,10 +1233,10 @@
             
             <nav>
                 <ul>
-                    <li><a href="#" class="active" onclick="showSection('home')">Главная</a></li>
-                    <li><a href="#" onclick="showSection('tariffs')">Тарифы</a></li>
-                    <li><a href="#" onclick="showSection('download')">Скачать VPN</a></li>
-                    <li><a href="#" onclick="showSection('support')">Поддержка</a></li>
+                    <li><a class="active" onclick="showSection('home')">Главная</a></li>
+                    <li><a onclick="showSection('tariffs')">Тарифы</a></li>
+                    <li><a onclick="showSection('download')">Скачать VPN</a></li>
+                    <li><a onclick="showSection('support')">Поддержка</a></li>
                 </ul>
             </nav>
             
@@ -1315,7 +1378,7 @@
                 </div>
             </div>
 
-            <!-- Кастомный выбор дней - Улучшенный дизайн -->
+            <!-- Кастомный выбор дней -->
             <div class="custom-days">
                 <h3>Или выберите количество дней самостоятельно</h3>
                 <p style="margin-bottom: 20px; color: rgba(255, 255, 255, 0.8);">Цена: 4.97₽ за 1 день (минимально 7 дней)</p>
@@ -1335,6 +1398,16 @@
                 <button class="btn btn-primary btn-lg" onclick="buyCustomTariff()">
                     <i class="fas fa-shopping-cart"></i> Купить выбранный период
                 </button>
+            </div>
+            
+            <!-- Баннер с оплатой через Telegram -->
+            <div class="payment-banner">
+                <i class="fab fa-telegram"></i>
+                <h3>Оплата через Telegram</h3>
+                <p style="margin-bottom: 30px; font-size: 1.2rem;">Для пополнения баланса и покупки подписки перейдите в нашего Telegram бота</p>
+                <a href="https://t.me/wingsvpnbot" target="_blank" class="btn btn-lg">
+                    <i class="fab fa-telegram"></i> @wingsvpnbot
+                </a>
             </div>
         </div>
     </section>
@@ -1385,7 +1458,7 @@
         </div>
     </section>
 
-    <!-- Поддержка - Исправленные кнопки -->
+    <!-- Поддержка -->
     <section id="support" class="section">
         <div class="container">
             <h2 class="section-title">Поддержка <span>24/7</span></h2>
@@ -1394,9 +1467,9 @@
                 <div class="support-card">
                     <i class="fab fa-telegram"></i>
                     <h3>Telegram бот</h3>
-                    <p>Быстрая помощь через нашего Telegram бота. Нажмите на кнопку ниже чтобы перейти в бота.</p>
-                    <a href="https://t.me/WingsVPNBot" target="_blank" class="btn btn-primary support-btn">
-                        <i class="fab fa-telegram"></i> @WingsVPNBot
+                    <p>Быстрая помощь через нашего Telegram бота. Оплата, активация подписок, поддержка.</p>
+                    <a href="https://t.me/wingsvpnbot" target="_blank" class="btn btn-primary support-btn">
+                        <i class="fab fa-telegram"></i> @wingsvpnbot
                     </a>
                 </div>
                 
@@ -1437,21 +1510,16 @@
                 <button class="profile-nav-btn" onclick="showProfileTab('promocodes')">
                     <i class="fas fa-gift"></i> Промокоды
                 </button>
-                <button class="profile-nav-btn" onclick="showProfileTab('payment')">
-                    <i class="fas fa-wallet"></i> Пополнить баланс
-                </button>
             </div>
 
             <!-- Обзор профиля -->
             <div id="profile-dashboard" class="profile-section active">
                 <div class="dashboard">
                     <div class="dashboard-card">
-                        <i class="fas fa-wallet"></i>
-                        <h3>Ваш баланс</h3>
-                        <div class="balance" id="userBalance">0₽</div>
-                        <button class="btn btn-primary btn-sm" onclick="showProfileTab('payment')">
-                            <i class="fas fa-plus"></i> Пополнить
-                        </button>
+                        <i class="fas fa-user-circle"></i>
+                        <h3>Аккаунт</h3>
+                        <div class="user-email" id="userEmail">Загрузка...</div>
+                        <div id="userProvider" class="subscription-status"></div>
                     </div>
                     
                     <div class="dashboard-card">
@@ -1468,6 +1536,16 @@
                         <p>стран доступно</p>
                     </div>
                 </div>
+                
+                <!-- Информация об оплате -->
+                <div class="payment-banner">
+                    <i class="fab fa-telegram"></i>
+                    <h3>Пополнение баланса и покупка подписки</h3>
+                    <p style="margin-bottom: 30px;">Все платежи производятся через нашего Telegram бота</p>
+                    <a href="https://t.me/wingsvpnbot" target="_blank" class="btn btn-lg">
+                        <i class="fab fa-telegram"></i> Перейти в @wingsvpnbot
+                    </a>
+                </div>
             </div>
 
             <!-- Рефералы -->
@@ -1477,7 +1555,7 @@
                     <p>Приглашайте друзей и получайте 20% от их первой покупки на ваш баланс</p>
                     
                     <div class="referral-link">
-                        <input type="text" id="refLink" value="https://wingsvpn.ru/ref/abc123" readonly>
+                        <input type="text" id="refLink" value="Загрузка..." readonly>
                         <button class="btn btn-success" onclick="copyRefLink()">
                             <i class="fas fa-copy"></i> Копировать
                         </button>
@@ -1522,45 +1600,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Пополнение баланса -->
-            <div id="profile-payment" class="profile-section">
-                <div class="promo-box">
-                    <h3>Пополнение баланса</h3>
-                    
-                    <div class="payment-methods">
-                        <div class="payment-method active" data-method="card" onclick="selectPaymentMethod('card')">
-                            <i class="fas fa-credit-card"></i>
-                            <p>Банковская карта</p>
-                        </div>
-                        <div class="payment-method" data-method="qiwi" onclick="selectPaymentMethod('qiwi')">
-                            <i class="fas fa-wallet"></i>
-                            <p>QIWI Кошелек</p>
-                        </div>
-                        <div class="payment-method" data-method="crypto" onclick="selectPaymentMethod('crypto')">
-                            <i class="fas fa-coins"></i>
-                            <p>Криптовалюта</p>
-                        </div>
-                    </div>
-                    
-                    <h4 style="margin-top: 30px;">Выберите сумму</h4>
-                    <div class="amounts">
-                        <div class="amount active" data-amount="100" onclick="selectAmount(100)">100₽</div>
-                        <div class="amount" data-amount="299" onclick="selectAmount(299)">299₽</div>
-                        <div class="amount" data-amount="499" onclick="selectAmount(499)">499₽</div>
-                        <div class="amount" data-amount="999" onclick="selectAmount(999)">999₽</div>
-                    </div>
-                    
-                    <div class="custom-input" style="margin-top: 20px; flex-direction: row;">
-                        <input type="number" id="customAmount" class="days-input" min="10" max="10000" value="100" placeholder="Другая сумма" style="flex: 1;">
-                        <button class="btn btn-sm" onclick="setCustomAmount()">Применить</button>
-                    </div>
-                    
-                    <button class="btn btn-primary btn-lg" style="width: 100%; margin-top: 30px;" onclick="processPayment()">
-                        <i class="fas fa-lock"></i> Оплатить <span id="finalAmount">100</span>₽
-                    </button>
-                </div>
-            </div>
         </div>
     </section>
 
@@ -1568,22 +1607,34 @@
     <div class="modal" id="loginModal">
         <div class="modal-content">
             <button class="close-modal" onclick="closeModal('loginModal')">&times;</button>
-            <h2>Вход в аккаунт</h2>
+            <h2 style="margin-bottom: 30px;">Вход в аккаунт</h2>
             
-            <div class="form-group">
-                <label for="loginEmail">Email</label>
-                <input type="email" id="loginEmail" placeholder="your@email.com">
+            <div id="loginEmailForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" placeholder="your@email.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="loginPassword">Пароль</label>
+                    <input type="password" id="loginPassword" placeholder="Ваш пароль">
+                </div>
+                
+                <div id="loginError" class="error-message" style="display: none; margin-bottom: 15px;"></div>
+                
+                <button class="btn btn-primary" style="width: 100%;" onclick="loginWithEmail()" id="loginBtn">
+                    <span id="loginBtnText">Войти</span>
+                </button>
             </div>
             
-            <div class="form-group">
-                <label for="loginPassword">Пароль</label>
-                <input type="password" id="loginPassword" placeholder="Ваш пароль">
-            </div>
+            <div class="divider">или</div>
             
-            <button class="btn btn-primary" style="width: 100%;" onclick="login()">Войти</button>
+            <button class="btn btn-google" style="width: 100%;" onclick="loginWithGoogle()" id="googleLoginBtn">
+                <i class="fab fa-google"></i> Войти через Google
+            </button>
             
             <div class="form-switch">
-                Нет аккаунта? <a href="#" onclick="showModal('register')">Зарегистрироваться</a>
+                Нет аккаунта? <a onclick="switchToRegister()">Зарегистрироваться</a>
             </div>
         </div>
     </div>
@@ -1592,27 +1643,40 @@
     <div class="modal" id="registerModal">
         <div class="modal-content">
             <button class="close-modal" onclick="closeModal('registerModal')">&times;</button>
-            <h2>Регистрация аккаунта</h2>
+            <h2 style="margin-bottom: 30px;">Регистрация аккаунта</h2>
             
-            <div class="form-group">
-                <label for="regEmail">Email</label>
-                <input type="email" id="regEmail" placeholder="your@email.com">
+            <div id="registerEmailForm">
+                <div class="form-group">
+                    <label for="regEmail">Email</label>
+                    <input type="email" id="regEmail" placeholder="your@email.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="regPassword">Пароль</label>
+                    <input type="password" id="regPassword" placeholder="Придумайте пароль (мин. 6 символов)">
+                </div>
+                
+                <div class="form-group">
+                    <label for="regConfirmPassword">Подтвердите пароль</label>
+                    <input type="password" id="regConfirmPassword" placeholder="Повторите пароль">
+                </div>
+                
+                <div id="registerError" class="error-message" style="display: none; margin-bottom: 15px;"></div>
+                <div id="registerSuccess" class="success-message" style="display: none; margin-bottom: 15px;"></div>
+                
+                <button class="btn btn-primary" style="width: 100%;" onclick="registerWithEmail()" id="registerBtn">
+                    <span id="registerBtnText">Зарегистрироваться</span>
+                </button>
             </div>
             
-            <div class="form-group">
-                <label for="regPassword">Пароль</label>
-                <input type="password" id="regPassword" placeholder="Придумайте пароль">
-            </div>
+            <div class="divider">или</div>
             
-            <div class="form-group">
-                <label for="regConfirmPassword">Подтвердите пароль</label>
-                <input type="password" id="regConfirmPassword" placeholder="Повторите пароль">
-            </div>
-            
-            <button class="btn btn-primary" style="width: 100%;" onclick="register()">Зарегистрироваться</button>
+            <button class="btn btn-google" style="width: 100%;" onclick="loginWithGoogle()" id="googleRegisterBtn">
+                <i class="fab fa-google"></i> Зарегистрироваться через Google
+            </button>
             
             <div class="form-switch">
-                Уже есть аккаунт? <a href="#" onclick="showModal('login')">Войти</a>
+                Уже есть аккаунт? <a onclick="switchToLogin()">Войти</a>
             </div>
         </div>
     </div>
@@ -1629,20 +1693,19 @@
                 <div class="footer-links">
                     <h4>Сервис</h4>
                     <ul>
-                        <li><a href="#" onclick="showSection('tariffs')">Тарифы</a></li>
-                        <li><a href="#" onclick="showSection('download')">Скачать VPN</a></li>
-                        <li><a href="#" onclick="showSection('support')">Поддержка</a></li>
-                        <li><a href="#" onclick="showSection('profile')">Личный кабинет</a></li>
+                        <li><a onclick="showSection('tariffs')">Тарифы</a></li>
+                        <li><a onclick="showSection('download')">Скачать VPN</a></li>
+                        <li><a onclick="showSection('support')">Поддержка</a></li>
+                        <li><a onclick="showSection('profile')">Личный кабинет</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-links">
                     <h4>Поддержка</h4>
                     <ul>
-                        <li><a href="https://t.me/WingsVPNBot" target="_blank">Telegram бот</a></li>
+                        <li><a href="https://t.me/wingsvpnbot" target="_blank">Telegram бот</a></li>
                         <li><a href="mailto:support@wingsvpn.ru">Email поддержка</a></li>
-                        <li><a href="#" onclick="showFAQ()">FAQ</a></li>
-                        <li><a href="#">Политика конфиденциальности</a></li>
+                        <li><a onclick="showFAQ()">FAQ</a></li>
                     </ul>
                 </div>
             </div>
@@ -1654,27 +1717,44 @@
     </footer>
 
     <script>
-        // Данные пользователя
-        let currentUser = null;
-        let userData = {
-            email: '',
-            balance: 0,
-            subscriptionDays: 0,
-            refCount: 0,
-            refEarned: 0
+        // Firebase конфигурация - ваши данные
+        const firebaseConfig = {
+            apiKey: "AIzaSyCpit8vLUDYarkEHfdIP2fkJHm1UenLwYU",
+            authDomain: "wingsvpn-9d878.firebaseapp.com",
+            projectId: "wingsvpn-9d878",
+            storageBucket: "wingsvpn-9d878.firebasestorage.app",
+            messagingSenderId: "458056354686",
+            appId: "1:458056354686:web:fdd1573767493f7ce5812f",
+            measurementId: "G-1XD998923L"
         };
 
-        // Тарифы (новая цена за день)
-        const DAY_PRICE = 4.97;
+        // Инициализация Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-        // Переменные для оплаты
-        let selectedPaymentMethod = 'card';
-        let selectedAmount = 100;
+        let currentUser = null;
+        let userData = {
+            uid: '',
+            email: '',
+            provider: '',
+            subscriptionDays: 0,
+            refCount: 0,
+            refEarned: 0,
+            referralCode: ''
+        };
+
+        // Тарифы
+        const DAY_PRICE = 4.97;
 
         // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
-            loadUserData();
-            updateUserData();
+            // Настройка персистентности
+            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+            
+            // Слушаем изменения авторизации
+            auth.onAuthStateChanged(handleAuthStateChange);
+            
             setupEventListeners();
             setupScrollAnimations();
             
@@ -1682,30 +1762,108 @@
             updateCustomPrice();
         });
 
-        // Загрузка данных пользователя из localStorage
-        function loadUserData() {
-            const savedUser = localStorage.getItem('wingsvpn_currentUser');
-            const savedData = localStorage.getItem('wingsvpn_userData');
-            
-            if (savedUser) {
-                currentUser = savedUser;
-                if (savedData) {
-                    userData = JSON.parse(savedData);
-                }
+        // Обработка изменения состояния авторизации
+        function handleAuthStateChange(user) {
+            if (user) {
+                // Пользователь вошел
+                currentUser = user;
+                loadUserData(user.uid);
                 updateAuthButtons(true);
+                
+                // Определяем провайдера
+                let provider = 'email';
+                if (user.providerData && user.providerData[0]) {
+                    provider = user.providerData[0].providerId;
+                }
+                
+                userData.email = user.email;
+                userData.uid = user.uid;
+                userData.provider = provider;
+                
+                // Создаем или обновляем документ пользователя в Firestore
+                updateUserInFirestore(user.uid, {
+                    email: user.email,
+                    provider: provider,
+                    lastLogin: new Date().toISOString()
+                });
+                
+                // Обновляем UI
+                updateUserData();
+                
+                // Если пользователь зашел через модальное окно, закрываем его
+                closeModal('loginModal');
+                closeModal('registerModal');
+            } else {
+                // Пользователь вышел
+                currentUser = null;
+                userData = {
+                    uid: '',
+                    email: '',
+                    provider: '',
+                    subscriptionDays: 0,
+                    refCount: 0,
+                    refEarned: 0,
+                    referralCode: ''
+                };
+                updateAuthButtons(false);
             }
         }
 
-        // Сохранение данных пользователя
-        function saveUserData() {
-            localStorage.setItem('wingsvpn_currentUser', currentUser);
-            localStorage.setItem('wingsvpn_userData', JSON.stringify(userData));
+        // Загрузка данных пользователя из Firestore
+        async function loadUserData(uid) {
+            try {
+                const docRef = db.collection('users').doc(uid);
+                const doc = await docRef.get();
+                
+                if (doc.exists) {
+                    userData = { ...userData, ...doc.data() };
+                } else {
+                    // Создаем нового пользователя
+                    const referralCode = generateReferralCode();
+                    const newUserData = {
+                        uid: uid,
+                        email: currentUser.email,
+                        provider: userData.provider,
+                        subscriptionDays: 0,
+                        refCount: 0,
+                        refEarned: 0,
+                        referralCode: referralCode,
+                        createdAt: new Date().toISOString()
+                    };
+                    await docRef.set(newUserData);
+                    userData = { ...userData, ...newUserData };
+                }
+                
+                updateUserData();
+            } catch (error) {
+                console.error("Error loading user data:", error);
+            }
+        }
+
+        // Обновление данных пользователя в Firestore
+        async function updateUserInFirestore(uid, data) {
+            try {
+                await db.collection('users').doc(uid).set(data, { merge: true });
+            } catch (error) {
+                console.error("Error updating user data:", error);
+            }
+        }
+
+        // Генерация реферального кода
+        function generateReferralCode() {
+            return 'WINGS' + Math.random().toString(36).substring(2, 8).toUpperCase();
         }
 
         // Обновление данных пользователя в интерфейсе
         function updateUserData() {
             if (currentUser) {
-                document.getElementById('userBalance').textContent = Math.round(userData.balance) + '₽';
+                document.getElementById('userEmail').textContent = userData.email || 'Загрузка...';
+                
+                const providerText = userData.provider === 'google.com' ? 
+                    '<i class="fab fa-google"></i> Google аккаунт' : 
+                    '<i class="fas fa-envelope"></i> Email';
+                document.getElementById('userProvider').innerHTML = providerText;
+                
                 document.getElementById('subscriptionDays').textContent = userData.subscriptionDays + ' дней';
                 
                 if (userData.subscriptionDays > 0) {
@@ -1716,8 +1874,13 @@
                     document.getElementById('subscriptionStatus').style.color = '#e63946';
                 }
                 
-                document.getElementById('refCount').textContent = userData.refCount;
-                document.getElementById('refEarned').textContent = Math.round(userData.refEarned) + '₽';
+                document.getElementById('refCount').textContent = userData.refCount || 0;
+                document.getElementById('refEarned').textContent = (userData.refEarned || 0) + '₽';
+                
+                // Реферальная ссылка
+                const baseUrl = window.location.origin;
+                const refLink = `${baseUrl}?ref=${userData.referralCode || ''}`;
+                document.getElementById('refLink').value = refLink;
             }
         }
 
@@ -1726,6 +1889,203 @@
             const date = new Date();
             date.setDate(date.getDate() + days);
             return date.toLocaleDateString('ru-RU');
+        }
+
+        // Регистрация через Email
+        async function registerWithEmail() {
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+            const errorDiv = document.getElementById('registerError');
+            const successDiv = document.getElementById('registerSuccess');
+            const btn = document.getElementById('registerBtn');
+            const btnText = document.getElementById('registerBtnText');
+            
+            // Сброс сообщений
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            
+            // Валидация
+            if (!email || !password || !confirmPassword) {
+                showError(errorDiv, 'Заполните все поля');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showError(errorDiv, 'Пароли не совпадают');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showError(errorDiv, 'Пароль должен содержать минимум 6 символов');
+                return;
+            }
+            
+            if (!validateEmail(email)) {
+                showError(errorDiv, 'Введите корректный email');
+                return;
+            }
+            
+            // Блокируем кнопку
+            btn.disabled = true;
+            btnText.textContent = 'Регистрация...';
+            
+            try {
+                // Регистрация в Firebase
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                
+                // Отправляем письмо с подтверждением
+                await userCredential.user.sendEmailVerification();
+                
+                showSuccess(successDiv, 'Регистрация успешна! Проверьте почту для подтверждения.');
+                
+                // Очищаем поля
+                document.getElementById('regEmail').value = '';
+                document.getElementById('regPassword').value = '';
+                document.getElementById('regConfirmPassword').value = '';
+                
+                // Закрываем модальное окно через 2 секунды
+                setTimeout(() => {
+                    closeModal('registerModal');
+                }, 2000);
+                
+            } catch (error) {
+                console.error("Registration error:", error);
+                let errorMessage = 'Ошибка регистрации';
+                
+                switch(error.code) {
+                    case 'auth/email-already-in-use':
+                        errorMessage = 'Этот email уже зарегистрирован';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = 'Неверный формат email';
+                        break;
+                    case 'auth/weak-password':
+                        errorMessage = 'Слишком простой пароль';
+                        break;
+                    default:
+                        errorMessage = error.message;
+                }
+                
+                showError(errorDiv, errorMessage);
+            } finally {
+                // Разблокируем кнопку
+                btn.disabled = false;
+                btnText.textContent = 'Зарегистрироваться';
+            }
+        }
+
+        // Вход через Email
+        async function loginWithEmail() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginError');
+            const btn = document.getElementById('loginBtn');
+            const btnText = document.getElementById('loginBtnText');
+            
+            // Сброс сообщений
+            errorDiv.style.display = 'none';
+            
+            // Валидация
+            if (!email || !password) {
+                showError(errorDiv, 'Заполните все поля');
+                return;
+            }
+            
+            // Блокируем кнопку
+            btn.disabled = true;
+            btnText.textContent = 'Вход...';
+            
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                
+                // Очищаем поля
+                document.getElementById('loginEmail').value = '';
+                document.getElementById('loginPassword').value = '';
+                
+                // Закрываем модальное окно
+                closeModal('loginModal');
+                
+            } catch (error) {
+                console.error("Login error:", error);
+                let errorMessage = 'Ошибка входа';
+                
+                switch(error.code) {
+                    case 'auth/user-not-found':
+                        errorMessage = 'Пользователь не найден';
+                        break;
+                    case 'auth/wrong-password':
+                        errorMessage = 'Неверный пароль';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = 'Неверный формат email';
+                        break;
+                    case 'auth/user-disabled':
+                        errorMessage = 'Аккаунт заблокирован';
+                        break;
+                    default:
+                        errorMessage = error.message;
+                }
+                
+                showError(errorDiv, errorMessage);
+            } finally {
+                // Разблокируем кнопку
+                btn.disabled = false;
+                btnText.textContent = 'Войти';
+            }
+        }
+
+        // Вход через Google
+        async function loginWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            
+            try {
+                await auth.signInWithPopup(provider);
+                closeModal('loginModal');
+                closeModal('registerModal');
+            } catch (error) {
+                console.error("Google login error:", error);
+                alert('Ошибка входа через Google: ' + error.message);
+            }
+        }
+
+        // Выход
+        async function logout() {
+            try {
+                await auth.signOut();
+                showSection('home');
+            } catch (error) {
+                console.error("Logout error:", error);
+            }
+        }
+
+        // Вспомогательные функции
+        function showError(element, message) {
+            element.textContent = message;
+            element.style.display = 'block';
+            element.style.color = '#e63946';
+        }
+
+        function showSuccess(element, message) {
+            element.textContent = message;
+            element.style.display = 'block';
+            element.style.color = '#4cc9f0';
+        }
+
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        // Переключение между модальными окнами
+        function switchToRegister() {
+            closeModal('loginModal');
+            showModal('register');
+        }
+
+        function switchToLogin() {
+            closeModal('registerModal');
+            showModal('login');
         }
 
         // Настройка обработчиков событий
@@ -1741,20 +2101,6 @@
                     header.classList.remove('scrolled');
                 }
             });
-
-            // Обработка кликов по навигации
-            document.querySelectorAll('nav a').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const target = this.getAttribute('onclick');
-                    if (target) {
-                        eval(target);
-                    }
-                });
-            });
-
-            // Инициализация ползунка дней
-            updateDaysInput(document.getElementById('daysRange').value);
         }
 
         // Настройка анимаций при скролле
@@ -1857,104 +2203,6 @@
             document.getElementById(modalId).classList.remove('active');
         }
 
-        // Регистрация
-        function register() {
-            const email = document.getElementById('regEmail').value;
-            const password = document.getElementById('regPassword').value;
-            const confirmPassword = document.getElementById('regConfirmPassword').value;
-            
-            if (!email || !password) {
-                alert('Заполните все поля');
-                return;
-            }
-            
-            if (password !== confirmPassword) {
-                alert('Пароли не совпадают');
-                return;
-            }
-            
-            if (!validateEmail(email)) {
-                alert('Введите корректный email');
-                return;
-            }
-            
-            // Фейковая регистрация
-            currentUser = email;
-            userData.email = email;
-            userData.balance = 100; // Бонус за регистрацию
-            userData.subscriptionDays = 0;
-            userData.refCount = 0;
-            userData.refEarned = 0;
-            
-            saveUserData();
-            updateUserData();
-            updateAuthButtons(true);
-            
-            closeModal('registerModal');
-            alert('Регистрация успешна! Вам начислен бонус 100₽ на баланс.');
-            showSection('profile');
-        }
-
-        // Валидация email
-        function validateEmail(email) {
-            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return re.test(email);
-        }
-
-        // Вход
-        function login() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            if (!email || !password) {
-                alert('Заполните все поля');
-                return;
-            }
-            
-            if (!validateEmail(email)) {
-                alert('Введите корректный email');
-                return;
-            }
-            
-            // Фейковый вход
-            currentUser = email;
-            
-            // Если пользователь новый, создаем данные
-            if (!localStorage.getItem('wingsvpn_userData')) {
-                userData.email = email;
-                userData.balance = 0;
-                userData.subscriptionDays = 0;
-                userData.refCount = 0;
-                userData.refEarned = 0;
-                saveUserData();
-            }
-            
-            updateAuthButtons(true);
-            
-            closeModal('loginModal');
-            alert('Вход выполнен успешно!');
-            showSection('profile');
-        }
-
-        // Выход
-        function logout() {
-            currentUser = null;
-            updateAuthButtons(false);
-            showSection('home');
-            alert('Вы вышли из аккаунта');
-        }
-
-        // Обновить кнопки авторизации
-        function updateAuthButtons(isLoggedIn) {
-            if (isLoggedIn) {
-                document.getElementById('authButtons').style.display = 'none';
-                document.getElementById('profileButtons').style.display = 'flex';
-            } else {
-                document.getElementById('authButtons').style.display = 'flex';
-                document.getElementById('profileButtons').style.display = 'none';
-            }
-        }
-
         // Покупка тарифа
         function buyTariff(days, price) {
             if (!currentUser) {
@@ -1963,18 +2211,8 @@
                 return;
             }
             
-            if (userData.balance >= price) {
-                userData.balance -= price;
-                userData.subscriptionDays += days;
-                updateUserData();
-                saveUserData();
-                alert(`✅ Подписка успешно активирована на ${days} дней!`);
-                showSection('profile');
-            } else {
-                alert('❌ Недостаточно средств на балансе. Пополните баланс.');
-                showSection('profile');
-                showProfileTab('payment');
-            }
+            alert(`✅ Для покупки подписки на ${days} дней перейдите в Telegram бота @wingsvpnbot и укажите этот тариф.`);
+            window.open('https://t.me/wingsvpnbot', '_blank');
         }
 
         // Покупка кастомного тарифа
@@ -1982,7 +2220,14 @@
             const days = parseInt(document.getElementById('customDays').value) || 30;
             const price = days * DAY_PRICE;
             
-            buyTariff(days, Math.round(price));
+            if (!currentUser) {
+                alert('Для покупки необходимо войти в аккаунт');
+                showModal('login');
+                return;
+            }
+            
+            alert(`✅ Для покупки подписки на ${days} дней (${Math.round(price)}₽) перейдите в Telegram бота @wingsvpnbot и укажите этот период.`);
+            window.open('https://t.me/wingsvpnbot', '_blank');
         }
 
         // Скачать приложение
@@ -1996,7 +2241,7 @@
             
             alert(messages[type] || 'Начинаем загрузку...');
             
-            // В реальном приложении здесь был бы редирект на скачивание
+            // Здесь будут реальные ссылки на скачивание
             // window.location.href = getDownloadLink(type);
         }
 
@@ -2016,7 +2261,7 @@
         }
 
         // Активировать промокод
-        function activatePromoCode() {
+        async function activatePromoCode() {
             if (!currentUser) {
                 alert('Для активации промокода необходимо войти в аккаунт');
                 showModal('login');
@@ -2032,103 +2277,23 @@
                 return;
             }
             
-            // Пример проверки промокодов
-            const validPromoCodes = {
-                'WINGSFREE': { type: 'balance', value: 50 },
-                'NEWYEAR2026': { type: 'days', value: 30 },
-                'TALISOV': { type: 'discount', value: 0.15 }
-            };
+            // Здесь будет проверка промокода через Firebase
+            // Пока показываем сообщение
+            alert(`Промокод ${promoCode} будет активирован через Telegram бота. Перейдите в @wingsvpnbot`);
+            window.open('https://t.me/wingsvpnbot', '_blank');
             
-            if (validPromoCodes[promoCode]) {
-                const promo = validPromoCodes[promoCode];
-                
-                switch(promo.type) {
-                    case 'balance':
-                        userData.balance += promo.value;
-                        promoStatus.textContent = `✅ Промокод активирован! На баланс начислено ${promo.value}₽`;
-                        break;
-                    case 'days':
-                        userData.subscriptionDays += promo.value;
-                        promoStatus.textContent = `✅ Промокод активирован! Вам добавлено ${promo.value} дней подписки`;
-                        break;
-                    case 'discount':
-                        localStorage.setItem('wingsvpn_discount', promo.value.toString());
-                        promoStatus.textContent = `✅ Промокод активирован! Вы получили скидку ${promo.value * 100}% на следующую покупку`;
-                        break;
-                }
-                
-                updateUserData();
-                saveUserData();
-                promoStatus.style.color = '#4cc9f0';
-                document.getElementById('promoCode').value = '';
-                
-                // Показать уведомление
-                setTimeout(() => {
-                    promoStatus.textContent = 'Введите промокод для активации';
-                    promoStatus.style.color = 'rgba(255, 255, 255, 0.8)';
-                }, 3000);
+            document.getElementById('promoCode').value = '';
+        }
+
+        // Обновить кнопки авторизации
+        function updateAuthButtons(isLoggedIn) {
+            if (isLoggedIn) {
+                document.getElementById('authButtons').style.display = 'none';
+                document.getElementById('profileButtons').style.display = 'flex';
             } else {
-                promoStatus.textContent = '❌ Промокод недействителен';
-                promoStatus.style.color = '#e63946';
+                document.getElementById('authButtons').style.display = 'flex';
+                document.getElementById('profileButtons').style.display = 'none';
             }
-        }
-
-        // Выбор метода оплаты
-        function selectPaymentMethod(method) {
-            selectedPaymentMethod = method;
-            document.querySelectorAll('.payment-method').forEach(el => {
-                el.classList.remove('active');
-            });
-            document.querySelector(`.payment-method[data-method="${method}"]`).classList.add('active');
-        }
-
-        // Выбор суммы
-        function selectAmount(amount) {
-            selectedAmount = amount;
-            document.querySelectorAll('.amount').forEach(el => {
-                el.classList.remove('active');
-            });
-            document.querySelector(`.amount[data-amount="${amount}"]`).classList.add('active');
-            document.getElementById('finalAmount').textContent = amount;
-            document.getElementById('customAmount').value = amount;
-        }
-
-        // Установить кастомную сумму
-        function setCustomAmount() {
-            const amount = parseInt(document.getElementById('customAmount').value);
-            if (amount >= 10 && amount <= 10000) {
-                selectAmount(amount);
-            } else {
-                alert('Сумма должна быть от 10 до 10000 рублей');
-            }
-        }
-
-        // Обработка оплаты
-        function processPayment() {
-            if (!currentUser) {
-                alert('Для пополнения баланса необходимо войти в аккаунт');
-                showModal('login');
-                return;
-            }
-            
-            userData.balance += selectedAmount;
-            updateUserData();
-            saveUserData();
-            alert(`✅ Баланс успешно пополнен на ${selectedAmount}₽ через ${getPaymentMethodName(selectedPaymentMethod)}!`);
-            
-            // Сбросить выбор
-            selectPaymentMethod('card');
-            selectAmount(100);
-        }
-
-        // Получить название метода оплаты
-        function getPaymentMethodName(method) {
-            const methods = {
-                'card': 'банковскую карту',
-                'qiwi': 'QIWI кошелек',
-                'crypto': 'криптовалюту'
-            };
-            return methods[method] || method;
         }
     </script>
 </body>
